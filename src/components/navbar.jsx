@@ -104,7 +104,7 @@ function AuthButtons({ className }) {
         href="/login"
         className={cn(
           buttonVariants({ variant: "ghost", size: "lg" }),
-          "text-sky-700 hover:bg-sky-100 hover:text-sky-950",
+          "text-sky-600 hover:bg-sky-100 hover:text-sky-900",
         )}
       >
         Login
