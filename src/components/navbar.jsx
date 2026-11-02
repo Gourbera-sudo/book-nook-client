@@ -16,6 +16,7 @@ import {
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
 
 const PUBLIC_LINKS = [
   { href: "/", label: "Home" },
@@ -83,7 +84,7 @@ function NavLinks({ user, pathname, onNavigate, className }) {
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "rounded-md px-3 py-2 text-lg font-medium transition-colors",
+              "rounded-md px-3 py-2 text-md font-medium transition-colors",
               active
                 ? "bg-sky-200 text-sky-900"
                 : "text-sky-900/70 hover:bg-sky-100 hover:text-sky-950",
@@ -200,7 +201,10 @@ function UserMenu({ user, onLogout, align = "end" }) {
   );
 }
 
-export default function Navbar({ user = null, onLogout }) {
+export default function Navbar({ onLogout }) {
+  const {data: session} = authClient.useSession();
+  const user = session?.user;
+  console.log(user)
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLoggedIn = Boolean(user);
@@ -208,6 +212,7 @@ export default function Navbar({ user = null, onLogout }) {
   function closeMobileMenu() {
     setMobileOpen(false);
   }
+  
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-sky-200 bg-sky-50/80 backdrop-blur supports-[backdrop-filter]:bg-sky-50/60">

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const SLIDES = [
   {
     eyebrow: "Welcome to BookNook",
-    title: "Find your next favorite story",
+    title: "Find your next favorite book",
     text: "Explore fiction, science, history, kids' books, and more from our growing collection.",
     image: "/images/banner/library-1.jpg",
     overlay:
