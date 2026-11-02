@@ -7,7 +7,7 @@ export default function Home() {
     <div className="pb-16">
       <BannerSlider />
       <HowBorrowingWorks />
-      {/* <TopCategories /> */}
+      <TopCategories />
     </div>
   );
 }
