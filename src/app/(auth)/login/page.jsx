@@ -35,6 +35,11 @@ export default function LoginPage() {
 
     
   };
+  const handleGoogleSignIn = async () => {
+  const data = await authClient.signIn.social({
+    provider: "google",
+  });
+};
 
   return (
     <div className="flex flex-col gap-6 max-w-md mx-auto min-h-screen justify-center">
@@ -75,7 +80,7 @@ export default function LoginPage() {
 
             <div className="flex flex-col gap-3">
               <Button type="submit">Login</Button>
-              <Button variant="outline" type="button">
+              <Button onClick={handleGoogleSignIn} variant="outline" type="button">
                 Login with Google
               </Button>
               <FieldDescription className="text-center">

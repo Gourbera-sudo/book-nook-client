@@ -213,6 +213,12 @@ export default function Navbar({ onLogout }) {
     setMobileOpen(false);
   }
   
+  const handleLogout = async() => {
+    const result = await authClient.signOut();
+      router.push("/login");
+    }
+  
+  
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-sky-200 bg-sky-50/80 backdrop-blur supports-[backdrop-filter]:bg-sky-50/60">
@@ -238,7 +244,7 @@ export default function Navbar({ onLogout }) {
 
         <div className="hidden items-center gap-2 md:flex">
           {isLoggedIn ? (
-            <UserMenu user={user} onLogout={onLogout} />
+            <UserMenu user={user} onLogout={handleLogout} />
           ) : (
             <AuthButtons />
           )}
@@ -273,7 +279,7 @@ export default function Navbar({ onLogout }) {
             <div className="border-t border-sky-200 pt-3">
               {isLoggedIn ? (
                 <div className="flex justify-end">
-                  <UserMenu user={user} onLogout={onLogout} />
+                  <UserMenu user={user} onLogout={handleLogout} />
                 </div>
               ) : (
                 <AuthButtons className="justify-end" />
