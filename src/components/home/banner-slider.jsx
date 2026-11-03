@@ -98,7 +98,7 @@ export default function BannerSlider() {
                   {text}
                 </p>
                 <Link
-                  href="/books"
+                  href="/all-books"
                   className={cn(
                     buttonVariants({ size: "lg" }),
                     "mt-8 gap-2 bg-white text-sky-700 shadow-lg shadow-sky-950/20 hover:bg-sky-50",

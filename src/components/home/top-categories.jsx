@@ -2,11 +2,11 @@ import Link from "next/link";
 import { ArrowRight, Atom, BookOpen, Landmark, Puzzle, Sparkles } from "lucide-react";
 
 const CATEGORIES = [
-  { name: "Fiction", slug: "fiction", count: 5, Icon: BookOpen },
-  { name: "Science", slug: "science", count: 5, Icon: Atom },
-  { name: "History", slug: "history", count: 5, Icon: Landmark },
-  { name: "Kids", slug: "kids", count: 5, Icon: Puzzle },
-  { name: "Others", slug: "others", count: 5, Icon: Sparkles },
+  { name: "Fiction", slug: "fiction", count: 4, Icon: BookOpen },
+  { name: "Science", slug: "science", count: 4, Icon: Atom },
+  { name: "History", slug: "history", count: 4, Icon: Landmark },
+  { name: "Kids", slug: "kids", count: 3, Icon: Puzzle },
+  { name: "Others", slug: "others", count: 4, Icon: Sparkles },
 ];
 
 export default function TopCategories() {
@@ -39,14 +39,14 @@ export default function TopCategories() {
           {CATEGORIES.map(({ name, slug, count, Icon }) => (
             <Link
               key={slug}
-              href={`/books?category=${slug}`}
+              href={`/all-books?category=${slug}`}
               className="group flex flex-col items-center rounded-2xl border border-sky-200 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:border-sky-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none"
             >
               <span className="grid size-12 place-items-center rounded-full bg-sky-100 text-sky-600 transition-colors group-hover:bg-sky-600 group-hover:text-white">
                 <Icon aria-hidden="true" className="size-6" />
               </span>
-              <span className="mt-4 font-semibold text-sky-950">{name}</span>
-              <span className="mt-1 text-sm text-sky-800/70">
+              <span className="mt-4 font-semibold text-md text-sky-950">{name}</span>
+              <span className="mt-1 text-md text-sky-800/70">
                 {count} books
               </span>
             </Link>

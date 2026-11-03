@@ -50,5 +50,5 @@ Early-stage book-borrowing app: marketing pages plus email/Google auth backed by
 
 ## Notes
 - `README.md` is stale create-next-app boilerplate; trust `src/app` and the config files instead.
-- Navbar links to `/books`, `/books/add`, `/my-books`, and `/my-borrows`, but none exist. `/all-books` fetches `http://localhost:5000/all-books` (Express server in `../book-nook-server`) inside `<Suspense>` because `cacheComponents` rejects uncached fetches at prerender time.
+- Navbar links to `/books`, `/books/add`, `/my-books`, and `/my-borrows`, but none exist. `/all-books` (optionally filtered with `?category=fiction`) and `/all-books/[bookId]` fetch the Express API at `http://localhost:5000` (server in `../book-nook-server`) inside `<Suspense>` because `cacheComponents` rejects uncached fetches at prerender time. Book documents contain only `_id`, `title`, `author`, `category`, and `image`; current `_id` values are strings, so the API's detail route matches both string and ObjectId forms.
 - Keep the managed `nextjs-agent-rules` block above; `next dev` recreates it.

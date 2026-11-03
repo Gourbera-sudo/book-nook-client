@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Image from "next/image";
-import { BookOpen } from "lucide-react";
+import { BookOpen, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 const BOOKS_API = "http://localhost:5000/all-books";
 
@@ -25,7 +26,13 @@ async function getBooks() {
   return Array.isArray(books) ? books : [];
 }
 
-async function BookGrid() {
+async function BookGrid({ searchParams }) {
+  const { category } = (await searchParams) ?? {};
+  const activeCategory =
+    typeof category === "string" && category.length > 0
+      ? category.toLowerCase()
+      : null;
+
   let books;
 
   try {
@@ -49,14 +56,51 @@ async function BookGrid() {
     );
   }
 
+  const visibleBooks = activeCategory
+    ? books.filter((book) => book.category?.toLowerCase() === activeCategory)
+    : books;
+
+  const categoryLabel = activeCategory
+    ? activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)
+    : null;
+
+  if (visibleBooks.length === 0) {
+    return (
+      <div className="mt-10 rounded-xl border border-dashed p-6">
+        <p className="text-sm text-muted-foreground">
+          No books found in {categoryLabel ?? "this category"}.
+        </p>
+        <Link
+          href="/all-books"
+          className="mt-3 inline-block text-sm font-medium text-sky-700 hover:text-sky-900"
+        >
+          View all books
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <>
-      <p className="mt-8 text-sm font-medium text-sky-800/70">
-        {books.length} books
-      </p>
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-medium text-sky-800/70">
+          {categoryLabel ? `${categoryLabel} · ` : ""}
+          {visibleBooks.length} books
+        </p>
+
+        {activeCategory ? (
+          <Link
+            href="/all-books"
+            className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-medium text-sky-700 transition-colors hover:border-sky-400 hover:text-sky-900"
+          >
+            Clear filter
+            <X aria-hidden="true" className="size-3.5" />
+          </Link>
+        ) : null}
+      </div>
 
       <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {books.map((book) => (
+        {visibleBooks.map((book) => (
           <Card
             key={book._id}
             className="group h-full gap-3 pt-0 transition-all hover:-translate-y-1 hover:ring-sky-400/60"
@@ -93,9 +137,11 @@ async function BookGrid() {
             </CardContent>
 
             <CardFooter className="justify-center">
-              <Button variant="outline" size="sm" className="bg-sky-600 text-white hover:bg-sky-600/10">
-                View book
-              </Button>
+                <Link href={`/all-books/${book._id}`}>
+                  <Button variant="outline" size="sm" className="bg-sky-600 text-white hover:bg-sky-600/10">
+                    View book
+                  </Button>
+                </Link>
             </CardFooter>
           </Card>
         ))}
@@ -117,7 +163,7 @@ function BookGridSkeleton() {
   );
 }
 
-const AllBooks = () => {
+const AllBooks = ({ searchParams }) => {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <p className="text-xs font-medium tracking-widest text-sky-700 uppercase">
@@ -131,7 +177,7 @@ const AllBooks = () => {
       </p>
 
       <Suspense fallback={<BookGridSkeleton />}>
-        <BookGrid />
+        <BookGrid searchParams={searchParams} />
       </Suspense>
     </div>
   );
