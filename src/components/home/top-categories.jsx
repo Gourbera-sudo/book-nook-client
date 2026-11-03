@@ -27,7 +27,7 @@ export default function TopCategories() {
           </div>
 
           <Link
-            href="/books"
+            href="/all-books"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 transition-colors hover:text-sky-900"
           >
             See all books

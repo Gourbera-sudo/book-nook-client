@@ -10,14 +10,23 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # book-nook
 
+Early-stage book-borrowing app: marketing pages plus email/Google auth backed by MongoDB. Several navbar links point at routes that do not exist yet.
+
 ## Stack and layout
 - Next.js 16.4.3 App Router with React 19. JavaScript only: `.js`/`.jsx`, no TypeScript or `tsconfig`.
-- App code lives under `src/`; `@/*` resolves to `src/*` (`jsconfig.json`).
-- UI uses Tailwind CSS v4 (CSS-first) and shadcn/ui `base-nova` on Base UI (`@base-ui/react`), not Radix.
+- `@/*` resolves to `src/*` (`jsconfig.json`). App code is in `src/app`, shared components in `src/components`, helpers in `src/lib`, hooks in `src/hooks`.
+- UI uses Tailwind CSS v4 (CSS-first) and shadcn/ui `base-nova` on Base UI (`@base-ui/react`), not Radix. Icons come from `lucide-react`; the home banner uses `swiper`, the shadcn carousel uses `embla-carousel-react`.
+- `src/app/(auth)/login` and `(auth)/register` serve `/login` and `/register`; the route group only organizes files, it does not change URLs.
+
+## Auth and environment
+- better-auth 1.7 with the separate `@better-auth/mongo-adapter` package.
+- Server config: `src/lib/auth.js` (creates the Mongo client at module load, database name hardcoded as `book-nook`). Browser client: `src/lib/auth-client.js`. Handler: `src/app/api/auth/[...all]/route.js`.
+- `.env` (gitignored) defines `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. Auth needs the first three; Google sign-in needs the last two.
+- The navbar is a client component mounted in the root layout on every route and is the only session consumer, via `authClient.useSession()`. There is no server-side session helper yet.
 
 ## Commands
 - `npm run dev` — Turbopack dev server at http://localhost:3000.
-- `npm run lint` — the only check script; run it after changes.
+- `npm run lint` — the only check script; run it after changes. Baseline currently fails on `src/components/ui/carousel.jsx` and `src/hooks/use-mobile.js` (`react-hooks/set-state-in-effect`); don't treat those as new regressions.
 - `npm run build` / `npm start` — production build and serve.
 - No test, typecheck, format, or codegen scripts and no CI config. Don't run `npm test`.
 - If `next build` fails during prerendering, use `npx next build --debug-prerender` for full stack traces and all failing routes.
@@ -30,7 +39,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - React Compiler is enabled; don't add `useMemo`/`useCallback` just to memoize.
 - Turbopack is the bundler. `next.config.mjs` pipes `*.css` through `@tailwindcss/turbopack`; there is no PostCSS config.
 - Read the version-matched docs in `node_modules/next/dist/docs/` before using unfamiliar 16.x APIs.
-- A dev server may already be running; check `.next/dev/lock` for its PID/port before starting another.
+- A dev server may already be running; check `.next/dev/lock` before starting another.
 
 ## Styling and components
 - No `tailwind.config.*`. Theme tokens and the `dark` variant live in `src/app/globals.css`.
@@ -41,4 +50,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Notes
 - `README.md` is stale create-next-app boilerplate; trust `src/app` and the config files instead.
+- Navbar links to `/books`, `/books/add`, `/my-books`, and `/my-borrows`, but none exist. `/all-books` fetches `http://localhost:5000/all-books` (Express server in `../book-nook-server`) inside `<Suspense>` because `cacheComponents` rejects uncached fetches at prerender time.
 - Keep the managed `nextjs-agent-rules` block above; `next dev` recreates it.

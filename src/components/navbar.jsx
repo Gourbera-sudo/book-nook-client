@@ -20,7 +20,7 @@ import { authClient } from "@/lib/auth-client";
 
 const PUBLIC_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/books", label: "All Books" },
+  { href: "/all-books", label: "All Books" },
 ];
 
 const PRIVATE_LINKS = [
@@ -34,10 +34,10 @@ function isActive(pathname, href) {
     return pathname === "/";
   }
 
-  if (href === "/books") {
+  if (href === "/all-books") {
     return (
-      pathname === "/books" ||
-      (pathname.startsWith("/books/") && !pathname.startsWith("/books/add"))
+      pathname === "/all-books" ||
+      (pathname.startsWith("/all-books/") && !pathname.startsWith("/all-books/add"))
     );
   }
 
