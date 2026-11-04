@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 
+import { BookGridSkeleton } from "@/components/books/book-skeletons";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -23,7 +25,18 @@ async function getNewArrivals() {
   }
 
   const books = await res.json();
-  return Array.isArray(books) ? books.slice(0, NEW_ARRIVALS_COUNT) : [];
+
+  if (!Array.isArray(books)) {
+    return [];
+  }
+
+  return books
+    .slice()
+    .sort(
+      (first, second) =>
+        new Date(second.createdAt ?? 0) - new Date(first.createdAt ?? 0),
+    )
+    .slice(0, NEW_ARRIVALS_COUNT);
 }
 
 export async function NewArrivals() {
@@ -139,19 +152,15 @@ export function NewArrivalsSkeleton() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
       <div className="space-y-3">
-        <div className="h-5 w-32 animate-pulse rounded bg-muted" />
-        <div className="h-9 w-56 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-80 animate-pulse rounded bg-muted" />
+        <Skeleton className="h-5 w-32 rounded-full" />
+        <Skeleton className="h-9 w-56" />
+        <Skeleton className="h-4 w-80 max-w-full" />
       </div>
 
-      <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
-        {Array.from({ length: NEW_ARRIVALS_COUNT }).map((_, index) => (
-          <div
-            key={index}
-            className="h-96 animate-pulse rounded-xl bg-muted"
-          />
-        ))}
-      </div>
+      <BookGridSkeleton
+        count={NEW_ARRIVALS_COUNT}
+        className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6"
+      />
     </section>
   );
 }

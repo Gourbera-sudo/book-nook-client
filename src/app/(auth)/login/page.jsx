@@ -26,11 +26,17 @@ export default function LoginPage() {
       data[key] = value.toString();
     });
 
+    const nextParam = new URLSearchParams(window.location.search).get("next");
+    const callbackURL =
+      nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
+        ? nextParam
+        : "/";
+
     const { data: signInData, error } = await authClient.signIn.email({
       email: data.email,
       password: data.password,
       rememberMe: true,
-      callbackURL: "/",
+      callbackURL,
     });
 
     

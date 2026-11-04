@@ -24,7 +24,7 @@ const PUBLIC_LINKS = [
 ];
 
 const PRIVATE_LINKS = [
-  { href: "/books/add", label: "Add Book" },
+  { href: "/add-book", label: "Add Book" },
   { href: "/my-books", label: "My Books" },
   { href: "/my-borrows", label: "My Borrows" },
 ];

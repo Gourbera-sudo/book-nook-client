@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import { BookOpen, X } from "lucide-react";
 
+import { BookGridSkeleton } from "@/components/books/book-skeletons";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -150,19 +151,6 @@ async function BookGrid({ searchParams }) {
   );
 }
 
-function BookGridSkeleton() {
-  return (
-    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {Array.from({ length: 8 }).map((_, index) => (
-        <div
-          key={index}
-          className="h-104 animate-pulse rounded-xl bg-muted"
-        />
-      ))}
-    </div>
-  );
-}
-
 const AllBooks = ({ searchParams }) => {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -176,7 +164,14 @@ const AllBooks = ({ searchParams }) => {
         Browse our shelves and find your next read.
       </p>
 
-      <Suspense fallback={<BookGridSkeleton />}>
+      <Suspense
+        fallback={
+          <BookGridSkeleton
+            count={8}
+            className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          />
+        }
+      >
         <BookGrid searchParams={searchParams} />
       </Suspense>
     </div>

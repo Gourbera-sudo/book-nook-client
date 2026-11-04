@@ -10,36 +10,45 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # book-nook
 
-Early-stage book-borrowing app: marketing pages plus email/Google auth backed by MongoDB. Several navbar links point at routes that do not exist yet.
+Book-borrowing app: marketing pages, email/Google auth backed by MongoDB, and book browsing/adding backed by a separate Express API.
 
 ## Stack and layout
 - Next.js 16.4.3 App Router with React 19. JavaScript only: `.js`/`.jsx`, no TypeScript or `tsconfig`.
-- `@/*` resolves to `src/*` (`jsconfig.json`). App code is in `src/app`, shared components in `src/components`, helpers in `src/lib`, hooks in `src/hooks`.
-- UI uses Tailwind CSS v4 (CSS-first) and shadcn/ui `base-nova` on Base UI (`@base-ui/react`), not Radix. Icons come from `lucide-react`; the home banner uses `swiper`, the shadcn carousel uses `embla-carousel-react`.
-- `src/app/(auth)/login` and `(auth)/register` serve `/login` and `/register`; the route group only organizes files, it does not change URLs.
+- `@/*` resolves to `src/*` (`jsconfig.json`). Routes in `src/app`, shared components in `src/components` (shadcn primitives in `src/components/ui`), helpers in `src/lib`, hooks in `src/hooks`.
+- Tailwind CSS v4 (CSS-first) and shadcn/ui `base-nova` on Base UI (`@base-ui/react`), not Radix. Icons are `lucide-react`; the home banner uses `swiper`, the shadcn carousel uses `embla-carousel-react`.
+- `src/app/(auth)/login` and `(auth)/register` serve `/login` and `/register`; the route group only organizes files.
+
+## Commands and services
+- `npm run dev` — Turbopack dev server at http://localhost:3000. Check `.next/dev/lock` first; a dev server may already be running.
+- `npm run lint` — the only check script; run it after changes. Baseline fails on `src/components/ui/carousel.jsx` and `src/hooks/use-mobile.js` (`react-hooks/set-state-in-effect`); don't treat those two as new regressions.
+- `npm run build` / `npm start` — production build and serve.
+- No test, typecheck, format, or codegen scripts and no CI config. Don't run `npm test`.
+- Book data needs the separate Express server in `../book-nook-server` (run `node index.js` from that directory; it has its own `.env` with `MONGODB_URI` and no start script) on port 5000. `npm run dev` alone leaves `/`, `/all-books`, and book detail pages showing "Could not load…" messages.
+- If `next build` fails during prerendering, use `npx next build --debug-prerender` for full stack traces and all failing routes.
 
 ## Auth and environment
 - better-auth 1.7 with the separate `@better-auth/mongo-adapter` package.
 - Server config: `src/lib/auth.js` (creates the Mongo client at module load, database name hardcoded as `book-nook`). Browser client: `src/lib/auth-client.js`. Handler: `src/app/api/auth/[...all]/route.js`.
-- `.env` (gitignored) defines `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. Auth needs the first three; Google sign-in needs the last two.
-- The navbar is a client component mounted in the root layout on every route and is the only session consumer, via `authClient.useSession()`. There is no server-side session helper yet.
-
-## Commands
-- `npm run dev` — Turbopack dev server at http://localhost:3000.
-- `npm run lint` — the only check script; run it after changes. Baseline currently fails on `src/components/ui/carousel.jsx` and `src/hooks/use-mobile.js` (`react-hooks/set-state-in-effect`); don't treat those as new regressions.
-- `npm run build` / `npm start` — production build and serve.
-- No test, typecheck, format, or codegen scripts and no CI config. Don't run `npm test`.
-- If `next build` fails during prerendering, use `npx next build --debug-prerender` for full stack traces and all failing routes.
+- `.env` (gitignored) defines `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `IMGBB_API_KEY`. Auth needs the first three; Google sign-in needs the next two; `IMGBB_API_KEY` only feeds the now-unused `src/app/api/upload` route.
+- No server-side session helper exists. `src/proxy.js` (Next 16 proxy, matcher `/add-book`) only checks for a session cookie and redirects to `/login?next=/add-book`; `add-book/page.jsx` re-validates with `authClient.useSession()`. The navbar and add-book page are the `useSession()` consumers.
+- Login honors `?next=` for email/password sign-in only; the Google button does not pass it.
 
 ## Next.js 16 specifics
 - `cacheComponents: true`: data is uncached by default. Opt in with `'use cache'` (pair with `cacheLife(...)`); otherwise uncached reads must sit under `<Suspense>`, or prerendering/build fails.
 - Synchronous render-time values such as `new Date()`, `Math.random()`, and `crypto.randomUUID()` also trigger prerender errors unless cached or streamed.
-- `partialPrefetching: true`: `<Link>` prefetches a shared App Shell by default; use `prefetch={true}` only when URL-specific cached content must be prefetched. Prefetching only runs in production, so verify with `next start`.
+- `partialPrefetching: true`: `<Link>` prefetches a shared App Shell by default; use `prefetch={true}` only when URL-specific cached content must be prefetched. Automatic prefetching doesn't run in `next dev`, so verify with `next start`.
 - `instant` route-segment config controls instant-navigation/static-shell validation; prefer caching or `<Suspense>` over `export const instant = false`. It cannot be used in Client Components.
 - React Compiler is enabled; don't add `useMemo`/`useCallback` just to memoize.
 - Turbopack is the bundler. `next.config.mjs` pipes `*.css` through `@tailwindcss/turbopack`; there is no PostCSS config.
 - Read the version-matched docs in `node_modules/next/dist/docs/` before using unfamiliar 16.x APIs.
-- A dev server may already be running; check `.next/dev/lock` before starting another.
+
+## Routes and data flow
+- Public routes: `/`, `/all-books`, `/all-books/[bookId]`. The only implemented private route is `/add-book`; the navbar also links to `/my-books`, `/my-borrows`, `/profile`, and login links to `/forgot-password`, none of which exist.
+- `/all-books` and `/all-books/[bookId]` call the Express API (`GET /all-books`, `GET /all-books/:id`) with `cache: "no-store"` inside `<Suspense>`; `cacheComponents` rejects uncached fetches at prerender time. The list page filters the fetched array by `?category=` (lowercased exact match).
+- The home page's "New Arrivals" section (`src/components/home/new-arrivals.jsx`) fetches the same API under `<Suspense>`, sorts by `createdAt` descending, and renders the first 6.
+- Add-book flow: the form posts a user-supplied image URL directly to Express `POST /add-book` with JSON including `userName`/`userEmail`; the Express server adds `createdAt` and an ObjectId `_id`. The imgbb `POST /api/upload` route still exists but is no longer used by the form.
+- Book documents live in the `all-books` collection of the `book-nook` database: `_id`, `title`, `author`, `category`, `image`, and for form-added books `description`, `userName`, `userEmail`, `createdAt`. New inserts use ObjectIds, but the detail route matches both string and ObjectId `_id`s.
+- `next/image` allows any `http`/`https` host via `remotePatterns` in `next.config.mjs` so pasted cover URLs render; keep that in mind before tightening it.
 
 ## Styling and components
 - No `tailwind.config.*`. Theme tokens and the `dark` variant live in `src/app/globals.css`.
@@ -50,5 +59,6 @@ Early-stage book-borrowing app: marketing pages plus email/Google auth backed by
 
 ## Notes
 - `README.md` is stale create-next-app boilerplate; trust `src/app` and the config files instead.
-- Navbar links to `/books`, `/books/add`, `/my-books`, and `/my-borrows`, but none exist. `/all-books` (optionally filtered with `?category=fiction`) and `/all-books/[bookId]` fetch the Express API at `http://localhost:5000` (server in `../book-nook-server`) inside `<Suspense>` because `cacheComponents` rejects uncached fetches at prerender time. The home page's "New Arrivals" section (`src/components/home/new-arrivals.jsx`) also fetches that API under `<Suspense>` and renders the first 6 books via `slice(0, 6)`. Book documents contain only `_id`, `title`, `author`, `category`, and `image`; current `_id` values are strings, so the API's detail route matches both string and ObjectId forms.
+- Known rough edges: navbar logout calls `router.push` with no router in scope (throws at runtime), and the register page's Google button has no handler.
 - Keep the managed `nextjs-agent-rules` block above; `next dev` recreates it.
+- Loading UI: shared card/detail placeholders live in `src/components/books/book-skeletons.jsx`; route-level `loading.jsx` files live in `src/app/all-books/(list)/` and `src/app/all-books/[bookId]/` (the `(list)` route group keeps the grid loading UI from wrapping the detail route), and inline `<Suspense>` fallbacks cover the home New Arrivals section.

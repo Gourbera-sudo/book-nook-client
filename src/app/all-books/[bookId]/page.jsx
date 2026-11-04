@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, BookOpen } from "lucide-react";
 
+import { BookDetailsSkeleton } from "@/components/books/book-skeletons";
+
 const BOOKS_API = "http://localhost:5000/all-books";
 
 async function BookDetails({ params }) {
@@ -68,24 +70,6 @@ async function BookDetails({ params }) {
         </div>
       </div>
     </article>
-  );
-}
-
-function BookDetailsSkeleton() {
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-
-      <div className="mt-8 grid gap-8 md:grid-cols-[240px_1fr] md:items-start">
-        <div className="aspect-[2/3] w-full max-w-[240px] animate-pulse rounded-xl bg-muted" />
-        <div className="space-y-3">
-          <div className="h-5 w-20 animate-pulse rounded bg-muted" />
-          <div className="h-9 w-2/3 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-40 animate-pulse rounded bg-muted" />
-          <div className="h-16 w-full animate-pulse rounded bg-muted" />
-        </div>
-      </div>
-    </div>
   );
 }
 
