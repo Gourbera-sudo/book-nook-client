@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ImagePlus, Plus } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
+import { BOOKS_API } from "@/lib/api";
+import { authFetch } from "@/lib/api-client";
+import { normalizeImageUrl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,26 +37,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 
-const ADD_BOOK_API = "http://localhost:5000/add-book";
-
 const CATEGORIES = ["Fiction", "Science", "History", "Kids", "Others"];
-
-function normalizeImageUrl(value) {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  try {
-    const url = new URL(trimmed);
-    return url.protocol === "http:" || url.protocol === "https:"
-      ? url.toString()
-      : null;
-  } catch {
-    return null;
-  }
-}
 
 export default function AddBookPage() {
   const router = useRouter();
@@ -91,6 +75,9 @@ export default function AddBookPage() {
     const title = String(formData.get("title") ?? "").trim();
     const author = String(formData.get("author") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
+    const totalCopies = Number(
+      String(formData.get("totalCopies") ?? "").trim(),
+    );
 
     if (!title || !author || !description) {
       setError("Title, author, and short description are required.");
@@ -102,6 +89,11 @@ export default function AddBookPage() {
       return;
     }
 
+    if (!Number.isInteger(totalCopies) || totalCopies < 1) {
+      setError("Total copies must be a whole number of at least 1.");
+      return;
+    }
+
     if (!previewUrl) {
       setError("Please enter a valid image URL starting with http:// or https://.");
       return;
@@ -110,8 +102,9 @@ export default function AddBookPage() {
     setSubmitting(true);
 
     try {
-      const bookResponse = await fetch(ADD_BOOK_API, {
+      const bookResponse = await authFetch(BOOKS_API, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
@@ -119,8 +112,7 @@ export default function AddBookPage() {
           category,
           description,
           image: previewUrl,
-          userName: user?.name ?? "",
-          userEmail: user?.email ?? "",
+          totalCopies,
         }),
       });
       const bookResult = await bookResponse.json().catch(() => ({}));
@@ -153,7 +145,7 @@ export default function AddBookPage() {
 
   if (isPending) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center gap-3 text-sky-800/70">
+      <div className="flex min-h-[60vh] items-center justify-center gap-3 text-muted-foreground">
         <Spinner className="size-5" />
         Loading your account…
       </div>
@@ -162,7 +154,7 @@ export default function AddBookPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center gap-3 text-sky-800/70">
+      <div className="flex min-h-[60vh] items-center justify-center gap-3 text-muted-foreground">
         <Spinner className="size-5" />
         Redirecting to login…
       </div>
@@ -173,19 +165,19 @@ export default function AddBookPage() {
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <Link
         href="/all-books"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-sky-700 transition-colors hover:text-sky-900"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-foreground"
       >
         <ArrowLeft aria-hidden="true" className="size-4" />
         Back to all books
       </Link>
 
-      <p className="mt-6 text-xs font-medium tracking-widest text-sky-700 uppercase">
+      <p className="mt-6 text-xs font-medium tracking-widest text-primary uppercase">
         Library
       </p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-sky-950 sm:text-4xl">
+      <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
         Add a New Book
       </h1>
-      <p className="mt-3 max-w-xl text-lg text-sky-900/70">
+      <p className="mt-3 max-w-xl text-lg text-muted-foreground">
         Share a book from your shelf with the BookNook community.
       </p>
 
@@ -244,9 +236,26 @@ export default function AddBookPage() {
               </Field>
 
               <Field>
+                <FieldLabel htmlFor="totalCopies">Total Copies</FieldLabel>
+                <Input
+                  id="totalCopies"
+                  name="totalCopies"
+                  type="number"
+                  min={1}
+                  max={999}
+                  step={1}
+                  defaultValue={1}
+                  required
+                />
+                <FieldDescription>
+                  How many copies of this book can be borrowed at once.
+                </FieldDescription>
+              </Field>
+
+              <Field>
                 <FieldLabel htmlFor="imageUrl">Book Image URL</FieldLabel>
                 <div className="flex flex-wrap items-start gap-4">
-                  <div className="grid size-36 shrink-0 place-items-center overflow-hidden rounded-xl border border-dashed border-sky-200 bg-sky-50">
+                  <div className="grid size-36 shrink-0 place-items-center overflow-hidden rounded-xl border border-dashed border-border bg-muted">
                     {previewUrl && !previewError ? (
                       <Image
                         src={previewUrl}
@@ -258,7 +267,7 @@ export default function AddBookPage() {
                         className="size-full object-cover"
                       />
                     ) : (
-                      <div className="flex flex-col items-center gap-2 text-sky-500">
+                      <div className="flex flex-col items-center gap-2 text-primary">
                         <ImagePlus aria-hidden="true" className="size-7" />
                         <span className="text-xs font-medium">Cover preview</span>
                       </div>
@@ -338,7 +347,7 @@ export default function AddBookPage() {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="gap-2 bg-sky-600 text-white hover:bg-sky-700"
+                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {submitting ? (
                     <>

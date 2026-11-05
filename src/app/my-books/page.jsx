@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
-import { BookGridSkeleton } from "@/components/books/book-skeletons";
+import { BOOKS_API } from "@/lib/api";
+import DeleteBookDialog from "@/components/books/delete-book-dialog";
+import EditBookDialog from "@/components/books/edit-book-dialog";
+import LoadingState from "@/components/loading-state";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,28 +21,35 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const MY_BOOKS_API = "http://localhost:5000/my-books";
-
 const GRID_CLASS =
   "mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+
+function formatCopies(book) {
+  const total = Number.isInteger(book.totalCopies) ? book.totalCopies : 1;
+  const available = Number.isInteger(book.availableCopies)
+    ? book.availableCopies
+    : total;
+
+  return `${available} of ${total} ${total === 1 ? "copy" : "copies"} available`;
+}
 
 function MyBooksHeader() {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <p className="text-xs font-medium tracking-widest text-sky-700 uppercase">
+        <p className="text-xs font-medium tracking-widest text-primary uppercase">
           Your shelf
         </p>
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-sky-950 sm:text-4xl">
+        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
           My Books
         </h1>
-        <p className="mt-3 max-w-xl text-lg text-sky-900/70">
+        <p className="mt-3 max-w-xl text-lg text-muted-foreground">
           Books you have shared with BookNook.
         </p>
       </div>
 
       <Link href="/add-book">
-        <Button className="bg-sky-600 text-white hover:bg-sky-700">
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus aria-hidden="true" className="size-4" />
           Add a book
         </Button>
@@ -59,6 +69,8 @@ export default function MyBooksPage() {
     books: [],
     error: "",
   });
+  const [editingBook, setEditingBook] = useState(null);
+  const [deletingBook, setDeletingBook] = useState(null);
 
   useEffect(() => {
     if (!isPending && !user) {
@@ -73,8 +85,9 @@ export default function MyBooksPage() {
 
     let cancelled = false;
 
-    fetch(`${MY_BOOKS_API}?email=${encodeURIComponent(email)}`, {
+    fetch(BOOKS_API, {
       cache: "no-store",
+      credentials: "include",
     })
       .then((response) => {
         if (!response.ok) {
@@ -88,9 +101,15 @@ export default function MyBooksPage() {
           return;
         }
 
+        const allBooks = Array.isArray(data) ? data : [];
+        const mine = allBooks.filter(
+          (book) =>
+            String(book.userEmail ?? "").toLowerCase() === email.toLowerCase(),
+        );
+
         setResult({
           email,
-          books: Array.isArray(data) ? data : [],
+          books: mine,
           error: "",
         });
       })
@@ -115,11 +134,29 @@ export default function MyBooksPage() {
   const books = result.email === email ? result.books : [];
   const error = result.email === email ? result.error : "";
 
+  function handleSaved(updated) {
+    setResult((current) => ({
+      ...current,
+      books: current.books.map((book) =>
+        String(book._id) === String(updated._id)
+          ? { ...book, ...updated }
+          : book,
+      ),
+    }));
+  }
+
+  function handleDeleted(id) {
+    setResult((current) => ({
+      ...current,
+      books: current.books.filter((book) => String(book._id) !== String(id)),
+    }));
+  }
+
   if (isPending || loading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <MyBooksHeader />
-        <BookGridSkeleton count={4} className={GRID_CLASS} />
+        <LoadingState label="Loading your books…" />
       </div>
     );
   }
@@ -134,7 +171,7 @@ export default function MyBooksPage() {
 
       {error ? (
         <p className="mt-10 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-          {error} Make sure the books API is running at {MY_BOOKS_API}.
+          {error} Make sure the books API is running at {BOOKS_API}.
         </p>
       ) : books.length === 0 ? (
         <div className="mt-10 rounded-xl border border-dashed p-8 text-center">
@@ -143,14 +180,14 @@ export default function MyBooksPage() {
           </p>
           <Link
             href="/add-book"
-            className="mt-3 inline-block text-sm font-medium text-sky-700 hover:text-sky-900"
+            className="mt-3 inline-block text-sm font-medium text-primary hover:text-foreground"
           >
             Add your first book
           </Link>
         </div>
       ) : (
         <>
-          <p className="mt-8 text-sm font-medium text-sky-800/70">
+          <p className="mt-8 text-sm font-medium text-muted-foreground">
             {books.length} {books.length === 1 ? "book" : "books"}
           </p>
 
@@ -158,9 +195,9 @@ export default function MyBooksPage() {
             {books.map((book) => (
               <Card
                 key={book._id}
-                className="group h-full gap-3 pt-0 transition-all hover:-translate-y-1 hover:ring-sky-400/60"
+                className="group h-full gap-3 pt-0 transition-all hover:-translate-y-1 hover:ring-primary/40"
               >
-                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-t-xl bg-sky-100">
+                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-t-xl bg-muted">
                   {book.image ? (
                     <Image
                       src={book.image}
@@ -170,7 +207,7 @@ export default function MyBooksPage() {
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="grid h-full place-items-center text-sky-400">
+                    <div className="grid h-full place-items-center text-muted-foreground">
                       <BookOpen aria-hidden="true" className="size-10" />
                     </div>
                   )}
@@ -185,28 +222,74 @@ export default function MyBooksPage() {
 
                 <CardContent className="flex-1">
                   {book.category ? (
-                    <span className="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">
+                    <span className="inline-flex rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
                       {book.category}
                     </span>
                   ) : null}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {formatCopies(book)}
+                  </p>
                 </CardContent>
 
-                <CardFooter className="justify-center">
-                  <Link href={`/all-books/${book._id}`}>
+                <CardFooter className="flex-wrap justify-center gap-2">
+                  <Link href={`/books/${book._id}`}>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="bg-sky-600 text-white hover:bg-sky-600/10"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
                     >
-                      View book
+                      View
                     </Button>
                   </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingBook(book)}
+                  >
+                    <Pencil aria-hidden="true" className="size-3.5" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDeletingBook(book)}
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 aria-hidden="true" className="size-3.5" />
+                    Delete
+                  </Button>
                 </CardFooter>
               </Card>
             ))}
           </div>
         </>
       )}
+
+      {editingBook ? (
+        <EditBookDialog
+          book={editingBook}
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingBook(null);
+            }
+          }}
+          onSaved={handleSaved}
+        />
+      ) : null}
+
+      {deletingBook ? (
+        <DeleteBookDialog
+          book={deletingBook}
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setDeletingBook(null);
+            }
+          }}
+          onDeleted={handleDeleted}
+        />
+      ) : null}
     </div>
   );
 }

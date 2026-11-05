@@ -18,6 +18,15 @@ const nextConfig = {
       },
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/all-books/:bookId",
+        destination: "/books/:bookId",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

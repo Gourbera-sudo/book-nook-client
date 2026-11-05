@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Avatar } from "@base-ui/react/avatar";
 import { Menu } from "@base-ui/react/menu";
 import {
@@ -17,6 +17,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
+import { clearAuthToken } from "@/lib/api-client";
 
 const PUBLIC_LINKS = [
   { href: "/", label: "Home" },
@@ -37,7 +38,9 @@ function isActive(pathname, href) {
   if (href === "/all-books") {
     return (
       pathname === "/all-books" ||
-      (pathname.startsWith("/all-books/") && !pathname.startsWith("/all-books/add"))
+      (pathname.startsWith("/all-books/") &&
+        !pathname.startsWith("/all-books/add")) ||
+      pathname.startsWith("/books/")
     );
   }
 
@@ -86,8 +89,8 @@ function NavLinks({ user, pathname, onNavigate, className }) {
             className={cn(
               "rounded-md px-3 py-2 text-md font-medium transition-colors",
               active
-                ? "bg-sky-200 text-sky-900"
-                : "text-sky-900/70 hover:bg-sky-100 hover:text-sky-950",
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
           >
             {link.label}
@@ -105,7 +108,7 @@ function AuthButtons({ className }) {
         href="/login"
         className={cn(
           buttonVariants({ variant: "ghost", size: "lg" }),
-          "text-sky-600 hover:bg-sky-100 hover:text-sky-900",
+          "text-primary hover:bg-accent hover:text-foreground",
         )}
       >
         Login
@@ -114,7 +117,7 @@ function AuthButtons({ className }) {
         href="/register"
         className={cn(
           buttonVariants({ size: "lg" }),
-          "bg-sky-600 text-white hover:bg-sky-700",
+          "bg-primary text-primary-foreground hover:bg-primary/90",
         )}
       >
         Register
@@ -124,7 +127,7 @@ function AuthButtons({ className }) {
 }
 
 const menuItemClass =
-  "flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-hidden select-none data-highlighted:bg-sky-100 data-highlighted:text-sky-900";
+  "flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-foreground";
 
 function UserMenu({ user, onLogout, align = "end" }) {
   const name = getUserName(user);
@@ -134,9 +137,9 @@ function UserMenu({ user, onLogout, align = "end" }) {
     <Menu.Root>
       <Menu.Trigger
         aria-label="Open user menu"
-        className="flex items-center gap-1.5 rounded-full p-1 transition-colors hover:bg-sky-100 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none"
+        className="flex items-center gap-1.5 rounded-full p-1 transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
-        <Avatar.Root className="inline-flex size-8 items-center justify-center overflow-hidden rounded-full bg-sky-100 text-sm font-medium text-sky-700 select-none">
+        <Avatar.Root className="inline-flex size-8 items-center justify-center overflow-hidden rounded-full bg-accent text-sm font-medium text-accent-foreground select-none">
           {image ? (
             <Avatar.Image
               src={image}
@@ -155,23 +158,23 @@ function UserMenu({ user, onLogout, align = "end" }) {
         </Avatar.Root>
         <ChevronDown
           aria-hidden="true"
-          className="size-4 text-sky-700"
+          className="size-4 text-primary"
         />
       </Menu.Trigger>
 
       <Menu.Portal>
         <Menu.Positioner sideOffset={8} align={align} className="z-50">
-          <Menu.Popup className="min-w-56 origin-[var(--transform-origin)] rounded-lg border border-sky-200 bg-white p-1 text-sky-950 shadow-md outline-hidden transition-[transform,opacity] duration-100 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
+          <Menu.Popup className="min-w-56 origin-[var(--transform-origin)] rounded-lg border border-border bg-card p-1 text-foreground shadow-md outline-hidden transition-[transform,opacity] duration-100 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
             <div className="px-2 py-2">
               <p className="truncate text-sm font-medium">{name}</p>
               {user?.email ? (
-                <p className="truncate text-xs text-sky-800/70">
+                <p className="truncate text-xs text-muted-foreground">
                   {user.email}
                 </p>
               ) : null}
             </div>
 
-            <Menu.Separator className="my-1 h-px bg-sky-200" />
+            <Menu.Separator className="my-1 h-px bg-accent" />
 
             <Menu.LinkItem
               render={<Link href="/profile" />}
@@ -182,7 +185,7 @@ function UserMenu({ user, onLogout, align = "end" }) {
               My Profile
             </Menu.LinkItem>
 
-            <Menu.Separator className="my-1 h-px bg-sky-200" />
+            <Menu.Separator className="my-1 h-px bg-accent" />
 
             <Menu.Item
               onClick={onLogout}
@@ -204,8 +207,8 @@ function UserMenu({ user, onLogout, align = "end" }) {
 export default function Navbar({ onLogout }) {
   const {data: session} = authClient.useSession();
   const user = session?.user;
-  console.log(user)
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLoggedIn = Boolean(user);
 
@@ -214,24 +217,28 @@ export default function Navbar({ onLogout }) {
   }
   
   const handleLogout = async() => {
-    const result = await authClient.signOut();
-      router.push("/login");
+    await authClient.signOut();
+    clearAuthToken();
+    if (onLogout) {
+      onLogout();
     }
+    router.push("/login");
+  }
   
   
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-sky-200 bg-sky-50/80 backdrop-blur supports-[backdrop-filter]:bg-sky-50/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
           onClick={closeMobileMenu}
           className="flex shrink-0 items-center gap-2.5"
         >
-          <span className="grid size-9 place-items-center rounded-lg bg-sky-600 text-white">
+          <span className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
             <BookOpen aria-hidden="true" className="size-5" />
           </span>
-          <span className="text-2xl font-extrabold tracking-tight text-sky-950">
+          <span className="text-2xl font-extrabold tracking-tight text-foreground">
             BookNook
           </span>
         </Link>
@@ -256,7 +263,7 @@ export default function Navbar({ onLogout }) {
           aria-expanded={mobileOpen}
           aria-controls="mobile-navigation"
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          className="inline-flex size-9 items-center justify-center rounded-md text-sky-800 transition-colors hover:bg-sky-100 hover:text-sky-950 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none md:hidden"
+          className="inline-flex size-9 items-center justify-center rounded-md text-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
         >
           {mobileOpen ? (
             <X aria-hidden="true" className="size-5" />
@@ -267,7 +274,7 @@ export default function Navbar({ onLogout }) {
       </div>
 
       {mobileOpen ? (
-        <div id="mobile-navigation" className="border-t border-sky-200 md:hidden">
+        <div id="mobile-navigation" className="border-t border-border md:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6">
             <NavLinks
               user={isLoggedIn ? user : null}
@@ -276,7 +283,8 @@ export default function Navbar({ onLogout }) {
               className="flex flex-col items-stretch"
             />
 
-            <div className="border-t border-sky-200 pt-3">
+            <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+              <ThemeToggle />
               {isLoggedIn ? (
                 <div className="flex justify-end">
                   <UserMenu user={user} onLogout={handleLogout} />

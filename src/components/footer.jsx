@@ -47,45 +47,45 @@ function XIcon(props) {
 
 export default function Footer() {
   return (
-    <footer className="border-t border-sky-200 bg-sky-50">
+    <footer className="border-t border-border bg-card">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-[1.6fr_1fr_1fr]">
           <div>
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <span className="grid size-9 place-items-center rounded-lg bg-sky-600 text-white">
+              <span className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
                 <BookOpen aria-hidden="true" className="size-5" />
               </span>
-              <span className="text-2xl font-extrabold tracking-tight text-sky-950">
+              <span className="text-2xl font-extrabold tracking-tight text-foreground">
                 BookNook
               </span>
             </Link>
-            <p className="mt-4 max-w-sm text-md leading-6 text-sky-800/80">
+            <p className="mt-4 max-w-sm text-md leading-6 text-muted-foreground">
               A cozy corner to discover, share, and borrow books from readers
               near you.
             </p>
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-sky-950">Contact</h2>
+            <h2 className="text-lg font-semibold text-foreground">Contact</h2>
             <address className="mt-4 space-y-3 not-italic">
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="flex items-center gap-2 text-md text-sky-800/80 transition-colors hover:text-sky-950"
+                className="flex items-center gap-2 text-md text-muted-foreground transition-colors hover:text-foreground"
               >
-                <Mail aria-hidden="true" className="size-4 shrink-0 text-sky-600" />
+                <Mail aria-hidden="true" className="size-4 shrink-0 text-primary" />
                 {CONTACT_EMAIL}
               </a>
               <a
                 href={`tel:${CONTACT_PHONE.replace(/[^\d+]/g, "")}`}
-                className="flex items-center gap-2 text-md text-sky-800/80 transition-colors hover:text-sky-950"
+                className="flex items-center gap-2 text-md text-muted-foreground transition-colors hover:text-foreground"
               >
-                <Phone aria-hidden="true" className="size-4 shrink-0 text-sky-600" />
+                <Phone aria-hidden="true" className="size-4 shrink-0 text-primary" />
                 {CONTACT_PHONE}
               </a>
-              <p className="flex items-start gap-2 text-md text-sky-800/80">
+              <p className="flex items-start gap-2 text-md text-muted-foreground">
                 <MapPin
                   aria-hidden="true"
-                  className="mt-0.5 size-4 shrink-0 text-xl text-sky-600"
+                  className="mt-0.5 size-4 shrink-0 text-xl text-primary"
                 />
                 123 Reading Lane, Kolkata, India 
               </p>
@@ -93,7 +93,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-sky-950">Follow us</h2>
+            <h2 className="text-lg font-semibold text-foreground">Follow us</h2>
             <div className="mt-4 flex items-center gap-2">
               {SOCIAL_LINKS.map(({ label, href, Icon }) => (
                 <a
@@ -102,7 +102,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={`BookNook on ${label}`}
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-sky-200 bg-white text-sky-600 transition-colors hover:bg-sky-100 hover:text-sky-800 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-border bg-card text-primary transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   <Icon className="size-5" />
                 </a>
@@ -111,7 +111,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 border-t border-sky-200 pt-6 text-md text-sky-800/70 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-3 border-t border-border pt-6 text-md text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 BookNook. All rights reserved.</p>
           <p>Made for book lovers.</p>
         </div>

@@ -20,7 +20,7 @@ const SLIDES = [
     text: "Explore fiction, science, history, kids' books, and more from our growing collection.",
     image: "/images/banner/library-1.jpg",
     overlay:
-      "bg-gradient-to-r from-sky-950/95 via-blue-950/80 to-blue-900/70 lg:to-blue-900/25",
+      "bg-gradient-to-r from-brand-900/95 via-brand-950/80 to-brand-800/70 lg:to-brand-800/25",
   },
   {
     eyebrow: "Borrow with ease",
@@ -28,7 +28,7 @@ const SLIDES = [
     text: "Borrow from fellow readers, keep track of your loans, and return when you're done.",
     image: "/images/banner/library-2.jpg",
     overlay:
-      "bg-gradient-to-r from-blue-950/95 via-sky-950/80 to-cyan-950/70 lg:to-cyan-900/25",
+      "bg-gradient-to-r from-brand-950/95 via-brand-900/80 to-brand-700/70 lg:to-brand-700/25",
   },
   {
     eyebrow: "For every reader",
@@ -36,7 +36,7 @@ const SLIDES = [
     text: "From timeless classics to modern discoveries, there is always something new waiting for you.",
     image: "/images/banner/library-3.jpg",
     overlay:
-      "bg-gradient-to-r from-indigo-950/95 via-blue-950/80 to-sky-950/70 lg:to-sky-900/25",
+      "bg-gradient-to-r from-brand-900/95 via-brand-950/80 to-brand-800/70 lg:to-brand-800/25",
   },
 ];
 
@@ -62,7 +62,7 @@ export default function BannerSlider() {
       >
         {SLIDES.map(({ eyebrow, title, text, image, overlay }, index) => (
           <SwiperSlide key={title}>
-            <div className="relative flex min-h-[420px] items-center overflow-hidden bg-blue-950 px-6 py-14 sm:min-h-[460px] sm:px-12 lg:px-16">
+            <div className="relative flex min-h-[420px] items-center overflow-hidden bg-brand-950 px-6 py-14 sm:min-h-[460px] sm:px-12 lg:px-16">
               <Image
                 src={image}
                 alt=""
@@ -84,24 +84,24 @@ export default function BannerSlider() {
               />
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute -right-20 -bottom-32 size-96 rounded-full bg-cyan-300/20 blur-3xl"
+                className="pointer-events-none absolute -right-20 -bottom-32 size-96 rounded-full bg-brand-300/20 blur-3xl"
               />
 
               <div className="relative z-10 max-w-2xl">
-                <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium tracking-widest text-sky-50 uppercase">
+                <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium tracking-widest text-brand-50 uppercase">
                   {eyebrow}
                 </span>
                 <h2 className="mt-5 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
                   {title}
                 </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-sky-100 sm:text-lg">
+                <p className="mt-4 max-w-xl text-base leading-7 text-brand-100 sm:text-lg">
                   {text}
                 </p>
                 <Link
                   href="/all-books"
                   className={cn(
                     buttonVariants({ size: "lg" }),
-                    "mt-8 gap-2 bg-white text-sky-700 shadow-lg shadow-sky-950/20 hover:bg-sky-50",
+                    "mt-8 gap-2 bg-white text-brand-800 shadow-lg shadow-brand-950/20 hover:bg-brand-50",
                   )}
                 >
                   Browse Books
