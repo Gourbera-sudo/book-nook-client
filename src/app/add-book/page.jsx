@@ -132,10 +132,12 @@ export default function AddBookPage() {
       toast.add({
         type: "success",
         title: "Book added",
-        description: `"${title}" is now available in the library.`,
+        description: `"${title}" is now in My Books.`,
       });
 
       resetForm();
+      router.refresh();
+      router.push("/my-books");
     } catch (submitError) {
       const message = submitError.message || "Something went wrong.";
       setError(message);

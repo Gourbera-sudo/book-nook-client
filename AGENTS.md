@@ -23,14 +23,14 @@ Book-borrowing app: marketing pages, email/Google auth backed by MongoDB, and bo
 - `npm run lint` — the only check script; run it after changes. Baseline fails on `src/components/ui/carousel.jsx` and `src/hooks/use-mobile.js` (`react-hooks/set-state-in-effect`); don't treat those two as new regressions.
 - `npm run build` / `npm start` — production build and serve.
 - No test, typecheck, format, or codegen scripts and no CI config. Don't run `npm test`.
-- Book data needs the separate Express server in `../book-nook-server` (run `node index.js` from that directory; it has its own `.env` with `MONGODB_URI` and no start script) on port 5000. `npm run dev` alone leaves `/`, `/all-books`, and book detail pages showing "Could not load…" messages.
+- Book data needs the separate Express server in `../book-nook-server` (run `node index.js` from that directory; it has its own `.env` with `MONGODB_URI` and no start script) on port 5000. `npm run dev` alone leaves `/`, `/all-books`, `/my-books`, and book detail pages showing "Could not load…" messages.
 - If `next build` fails during prerendering, use `npx next build --debug-prerender` for full stack traces and all failing routes.
 
 ## Auth and environment
 - better-auth 1.7 with the separate `@better-auth/mongo-adapter` package.
 - Server config: `src/lib/auth.js` (creates the Mongo client at module load, database name hardcoded as `book-nook`). Browser client: `src/lib/auth-client.js`. Handler: `src/app/api/auth/[...all]/route.js`.
 - `.env` (gitignored) defines `MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `IMGBB_API_KEY`. Auth needs the first three; Google sign-in needs the next two; `IMGBB_API_KEY` only feeds the now-unused `src/app/api/upload` route.
-- No server-side session helper exists. `src/proxy.js` (Next 16 proxy, matcher `/add-book`) only checks for a session cookie and redirects to `/login?next=/add-book`; `add-book/page.jsx` re-validates with `authClient.useSession()`. The navbar and add-book page are the `useSession()` consumers.
+- No server-side session helper exists. `src/proxy.js` (Next 16 proxy, matcher `["/add-book", "/my-books"]`) only checks for a session cookie and redirects to `/login?next=<path>`; `add-book/page.jsx` and `my-books/page.jsx` re-validate with `authClient.useSession()`. The navbar and those two pages are the `useSession()` consumers.
 - Login honors `?next=` for email/password sign-in only; the Google button does not pass it.
 
 ## Next.js 16 specifics
@@ -43,11 +43,12 @@ Book-borrowing app: marketing pages, email/Google auth backed by MongoDB, and bo
 - Read the version-matched docs in `node_modules/next/dist/docs/` before using unfamiliar 16.x APIs.
 
 ## Routes and data flow
-- Public routes: `/`, `/all-books`, `/all-books/[bookId]`. The only implemented private route is `/add-book`; the navbar also links to `/my-books`, `/my-borrows`, `/profile`, and login links to `/forgot-password`, none of which exist.
+- Public routes: `/`, `/all-books`, `/all-books/[bookId]`. Implemented private routes: `/add-book` and `/my-books`; the navbar also links to `/my-borrows` and `/profile`, and login links to `/forgot-password`, none of which exist.
 - `/all-books` and `/all-books/[bookId]` call the Express API (`GET /all-books`, `GET /all-books/:id`) with `cache: "no-store"` inside `<Suspense>`; `cacheComponents` rejects uncached fetches at prerender time. The list page filters the fetched array by `?category=` (lowercased exact match).
 - The home page's "New Arrivals" section (`src/components/home/new-arrivals.jsx`) fetches the same API under `<Suspense>`, sorts by `createdAt` descending, and renders the first 6.
-- Add-book flow: the form posts a user-supplied image URL directly to Express `POST /add-book` with JSON including `userName`/`userEmail`; the Express server adds `createdAt` and an ObjectId `_id`. The imgbb `POST /api/upload` route still exists but is no longer used by the form.
-- Book documents live in the `all-books` collection of the `book-nook` database: `_id`, `title`, `author`, `category`, `image`, and for form-added books `description`, `userName`, `userEmail`, `createdAt`. New inserts use ObjectIds, but the detail route matches both string and ObjectId `_id`s.
+- Add-book flow: the form posts a user-supplied image URL directly to Express `POST /add-book` with JSON including `userName`/`userEmail`; the Express server stores it in the `add-book` collection with `createdAt` and an ObjectId `_id`, then the form redirects to `/my-books`. The imgbb `POST /api/upload` route still exists but is no longer used by the form.
+- `GET /all-books` merges `all-books` (seeded catalog) with `add-book` (user submissions), de-duplicated by `_id`; user submissions are sorted newest-first after the catalog. `GET /my-books?email=<email>` returns only that user's `add-book` documents, newest first. The detail route checks both collections.
+- Book documents live in the `book-nook` database: seeded books in `all-books`, form submissions in `add-book`. Both share `_id`, `title`, `author`, `category`, `image`; submissions also have `description`, `userName`, `userEmail`, `createdAt`. New inserts use ObjectIds, but the detail route matches both string and ObjectId `_id`s.
 - `next/image` allows any `http`/`https` host via `remotePatterns` in `next.config.mjs` so pasted cover URLs render; keep that in mind before tightening it.
 
 ## Styling and components
@@ -61,4 +62,4 @@ Book-borrowing app: marketing pages, email/Google auth backed by MongoDB, and bo
 - `README.md` is stale create-next-app boilerplate; trust `src/app` and the config files instead.
 - Known rough edges: navbar logout calls `router.push` with no router in scope (throws at runtime), and the register page's Google button has no handler.
 - Keep the managed `nextjs-agent-rules` block above; `next dev` recreates it.
-- Loading UI: shared card/detail placeholders live in `src/components/books/book-skeletons.jsx`; route-level `loading.jsx` files live in `src/app/all-books/(list)/` and `src/app/all-books/[bookId]/` (the `(list)` route group keeps the grid loading UI from wrapping the detail route), and inline `<Suspense>` fallbacks cover the home New Arrivals section.
+- Loading UI: shared card/detail placeholders live in `src/components/books/book-skeletons.jsx`; route-level `loading.jsx` files live in `src/app/all-books/(list)/`, `src/app/all-books/[bookId]/`, and `src/app/my-books/` (the `(list)` route group keeps the grid loading UI from wrapping the detail route), and inline `<Suspense>` fallbacks cover the home New Arrivals section.
