@@ -18,6 +18,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
 import { clearAuthToken } from "@/lib/api-client";
+import ThemeToggle from "@/components/theme-toggle";
 
 const PUBLIC_LINKS = [
   { href: "/", label: "Home" },
@@ -250,6 +251,7 @@ export default function Navbar({ onLogout }) {
         />
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {isLoggedIn ? (
             <UserMenu user={user} onLogout={handleLogout} />
           ) : (

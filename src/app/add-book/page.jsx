@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ImagePlus, Plus } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
-import { BOOKS_API } from "@/lib/api";
 import { authFetch } from "@/lib/api-client";
 import { normalizeImageUrl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -102,7 +101,7 @@ export default function AddBookPage() {
     setSubmitting(true);
 
     try {
-      const bookResponse = await authFetch(BOOKS_API, {
+      const bookResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

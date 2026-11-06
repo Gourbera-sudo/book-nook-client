@@ -1,8 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
-
-import { BOOKS_API } from "@/lib/api";
 import { BookGridSkeleton } from "@/components/books/book-skeletons";
 import Reveal from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
@@ -19,7 +17,7 @@ import {
 const NEW_ARRIVALS_COUNT = 6;
 
 async function getNewArrivals() {
-  const res = await fetch(BOOKS_API, { cache: "no-store" });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, { cache: "no-store" });
 
   if (!res.ok) {
     throw new Error(`Books API responded with ${res.status}`);
@@ -52,7 +50,7 @@ export async function NewArrivals() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
           Could not load new arrivals right now. Make sure the books API is
-          running at {BOOKS_API}.
+          running at {process.env.NEXT_PUBLIC_API_URL}/books.
         </p>
       </section>
     );
@@ -101,7 +99,7 @@ export async function NewArrivals() {
             amount={0.05}
           >
             <Card className="group h-full gap-3 pt-0 transition-all hover:-translate-y-1 hover:ring-primary/40">
-              <div className="relative aspect-[2/3] w-full overflow-hidden rounded-t-xl bg-muted">
+              <div className="relative aspect-2/3 w-full overflow-hidden rounded-t-xl bg-muted">
                 {book.image ? (
                   <Image
                     src={book.image}

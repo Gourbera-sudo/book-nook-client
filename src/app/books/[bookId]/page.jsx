@@ -7,7 +7,6 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, BookOpen } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
-import { BOOKS_API } from "@/lib/api";
 import { authFetchOptional } from "@/lib/api-client";
 import BorrowButton from "@/components/books/borrow-button";
 import LoadingState from "@/components/loading-state";
@@ -56,7 +55,7 @@ export default function BookDetailsPage() {
 
     let cancelled = false;
 
-    authFetchOptional(`${BOOKS_API}/${encodeURIComponent(bookId)}`, {
+    authFetchOptional(`${process.env.NEXT_PUBLIC_API_URL}/books/${encodeURIComponent(bookId)}`, {
       cache: "no-store",
       credentials: "include",
     })
@@ -137,7 +136,7 @@ export default function BookDetailsPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
         <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-          {error} Make sure the books API is running at {BOOKS_API}.
+          {error} Make sure the books API is running at {process.env.NEXT_PUBLIC_API_URL}/books.
         </p>
       </div>
     );

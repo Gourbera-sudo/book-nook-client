@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-
-import { BOOKS_API } from "@/lib/api";
 import { authFetch } from "@/lib/api-client";
 import {
   AlertDialog,
@@ -37,7 +35,7 @@ export default function DeleteBookDialog({
     setError("");
 
     try {
-      const response = await authFetch(`${BOOKS_API}/${book._id}`, {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${book._id}`, {
         method: "DELETE",
         credentials: "include",
       });

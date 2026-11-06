@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import { BookOpen, X } from "lucide-react";
-
-import { BOOKS_API } from "@/lib/api";
 import LoadingState from "@/components/loading-state";
 import Reveal from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
@@ -21,7 +19,7 @@ export const metadata = {
 };
 
 async function getBooks() {
-  const res = await fetch(BOOKS_API, { cache: "no-store" });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, { cache: "no-store" });
 
   if (!res.ok) {
     throw new Error(`Books API responded with ${res.status}`);
@@ -48,7 +46,7 @@ async function BookGrid({ searchParams }) {
     return (
       <p className="mt-10 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
         Could not load books right now. Make sure the books API is running at{" "}
-        {BOOKS_API}.
+        {process.env.NEXT_PUBLIC_API_URL}/books.
       </p>
     );
   }

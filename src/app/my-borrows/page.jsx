@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { BookOpen, RotateCcw } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
-import { BORROWS_API } from "@/lib/api";
 import { authFetch } from "@/lib/api-client";
 import LoadingState from "@/components/loading-state";
 import { Button } from "@/components/ui/button";
@@ -79,7 +78,7 @@ export default function MyBorrowsPage() {
 
     let cancelled = false;
 
-    authFetch(BORROWS_API, {
+    authFetch(`${process.env.NEXT_PUBLIC_API_URL}/borrows`, {
       cache: "no-store",
       credentials: "include",
     })
@@ -130,7 +129,7 @@ export default function MyBorrowsPage() {
     setReturningId(borrow._id);
 
     try {
-      const response = await authFetch(`${BORROWS_API}/${borrow._id}`, {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/borrows/${borrow._id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -184,7 +183,7 @@ export default function MyBorrowsPage() {
 
       {error ? (
         <p className="mt-10 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-          {error} Make sure the books API is running at {BORROWS_API}.
+          {error} Make sure the books API is running at {process.env.NEXT_PUBLIC_API_URL}/borrows.
         </p>
       ) : borrows.length === 0 ? (
         <div className="mt-10 rounded-xl border border-dashed p-8 text-center">
@@ -218,7 +217,7 @@ export default function MyBorrowsPage() {
                 return (
                   <TableRow key={borrow._id}>
                     <TableCell className="py-3 pl-4">
-                      <div className="relative aspect-[2/3] w-12 overflow-hidden rounded-md bg-muted">
+                      <div className="relative aspect-2/3 w-12 overflow-hidden rounded-md bg-muted">
                         {borrow.bookImage ? (
                           <Image
                             src={borrow.bookImage}

@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { Save } from "lucide-react";
-
-import { BOOKS_API } from "@/lib/api";
 import { authFetch } from "@/lib/api-client";
 import { normalizeImageUrl } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -74,7 +72,7 @@ function EditBookForm({ book, onOpenChange, onSaved }) {
     setSubmitting(true);
 
     try {
-      const response = await authFetch(`${BOOKS_API}/${book._id}`, {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${book._id}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

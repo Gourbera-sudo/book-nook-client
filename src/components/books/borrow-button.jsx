@@ -5,7 +5,6 @@ import Link from "next/link";
 import { BookCheck, BookOpen, BookX, Loader2 } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
-import { BORROWS_API } from "@/lib/api";
 import { authFetch } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,7 +54,7 @@ export default function BorrowButton({ book }) {
     setSubmitting(true);
 
     try {
-      const response = await authFetch(BORROWS_API, {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/borrows`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

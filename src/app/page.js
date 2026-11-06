@@ -18,7 +18,7 @@ export default function Home() {
       <Suspense
         fallback={
           <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
-            <div className="min-h-[420px] rounded-3xl bg-brand-950 sm:min-h-[460px]" />
+            <div className="min-h-105 rounded-3xl bg-brand-950 sm:min-h-115" />
           </div>
         }
       >

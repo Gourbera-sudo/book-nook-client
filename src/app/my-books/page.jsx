@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { BookOpen, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
-import { BOOKS_API } from "@/lib/api";
 import DeleteBookDialog from "@/components/books/delete-book-dialog";
 import EditBookDialog from "@/components/books/edit-book-dialog";
 import LoadingState from "@/components/loading-state";
@@ -85,7 +84,7 @@ export default function MyBooksPage() {
 
     let cancelled = false;
 
-    fetch(BOOKS_API, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, {
       cache: "no-store",
       credentials: "include",
     })
@@ -171,7 +170,7 @@ export default function MyBooksPage() {
 
       {error ? (
         <p className="mt-10 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-          {error} Make sure the books API is running at {BOOKS_API}.
+          {error} Make sure the books API is running at {process.env.NEXT_PUBLIC_API_URL}/books.
         </p>
       ) : books.length === 0 ? (
         <div className="mt-10 rounded-xl border border-dashed p-8 text-center">
